@@ -1,0 +1,9 @@
+# Env / secrets — never commit
+.env
+.env.local
+
+# Build / IDE / OS
+.next/
+.idea/
+.vscode/
+.DS_Store
