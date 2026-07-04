@@ -1,0 +1,2 @@
+# ShadCN UI primitives live here.
+# Add them with: npx shadcn@latest add <component>  (e.g. card, button, progress)
