@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { analyzeUrl } from "@/lib/api";
+import { AssessmentReport } from "@/components/AssessmentReport";
 import type { Assessment } from "@/types/assessment";
 
 function App() {
@@ -50,20 +51,7 @@ function App() {
 
         {error && <p className="mt-6 text-sm text-destructive">{error}</p>}
 
-        {result && (
-          <section className="mt-10 space-y-4">
-            <div className="rounded-lg border border-border p-6">
-              <div className="text-sm text-muted-foreground">{result.url}</div>
-              <div className="mt-1 text-2xl font-semibold">
-                {result.overallScore}/100 · {result.rating}
-              </div>
-              <p className="mt-2">{result.verdict}</p>
-            </div>
-            {/* TODO: Build the full scorecard dashboard (dimension grid,
-                strengths / red flags, diligence questions) using ShadCN
-                components added under src/components/ui. See SPEC.md > "Output / UI". */}
-          </section>
-        )}
+        {result && <AssessmentReport result={result} />}
       </div>
     </div>
   );
