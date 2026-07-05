@@ -1,45 +1,23 @@
 import type { ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, HelpCircle } from "lucide-react";
 import type { Assessment, Rating } from "@/types/assessment";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-const RATING_STYLES: Record<Rating, string> = {
-  Strong: "bg-emerald-100 text-emerald-800",
-  Promising: "bg-sky-100 text-sky-800",
-  Mixed: "bg-amber-100 text-amber-800",
-  Weak: "bg-red-100 text-red-800",
+const RATING_VARIANT: Record<Rating, "success" | "info" | "warning" | "destructive"> = {
+  Strong: "success",
+  Promising: "info",
+  Mixed: "warning",
+  Weak: "destructive",
 };
 
-/** Bar fill color banded by score: strong / mixed / weak. */
+/** Progress-bar fill color banded by score: strong / mixed / weak. */
 function scoreColor(score: number): string {
   if (score >= 70) return "bg-emerald-500";
   if (score >= 40) return "bg-amber-500";
   return "bg-red-500";
-}
-
-function RatingBadge({ rating }: { rating: Rating }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-        RATING_STYLES[rating] ?? "bg-muted text-muted-foreground",
-      )}
-    >
-      {rating}
-    </span>
-  );
-}
-
-function ScoreBar({ score }: { score: number }) {
-  const clamped = Math.max(0, Math.min(100, score));
-  return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-      <div
-        className={cn("h-full rounded-full transition-all", scoreColor(clamped))}
-        style={{ width: `${clamped}%` }}
-      />
-    </div>
-  );
 }
 
 function ListSection({
@@ -55,20 +33,20 @@ function ListSection({
 }) {
   if (items.length === 0) return null;
   return (
-    <div className="rounded-lg border border-border p-6">
+    <Card className="p-6">
       <h3 className="flex items-center gap-2 font-semibold">
         <span className={tone}>{icon}</span>
         {title}
       </h3>
-      <ul className="mt-3 space-y-2 text-sm">
+      <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
         {items.map((item, index) => (
-          <li key={index} className="flex gap-2">
-            <span className="text-muted-foreground">•</span>
+          <li key={index} className="flex gap-2.5">
+            <span className={cn("mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-current", tone)} />
             <span>{item}</span>
           </li>
         ))}
       </ul>
-    </div>
+    </Card>
   );
 }
 
@@ -79,30 +57,32 @@ function ListSection({
 export function AssessmentReport({ result }: { result: Assessment }) {
   return (
     <section className="mt-10 space-y-6">
-      <div className="rounded-lg border border-border p-6">
+      <Card className="p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="truncate text-sm text-muted-foreground">{result.url}</div>
             <h2 className="mt-1 text-lg font-semibold">{result.pageTitle}</h2>
           </div>
-          <RatingBadge rating={result.rating} />
+          <Badge variant={RATING_VARIANT[result.rating]}>{result.rating}</Badge>
         </div>
 
-        <div className="mt-4 flex items-baseline gap-2">
-          <span className="text-4xl font-bold tracking-tight">{result.overallScore}</span>
+        <div className="mt-5 flex items-baseline gap-2">
+          <span className="text-5xl font-bold tracking-tight">{result.overallScore}</span>
           <span className="text-muted-foreground">/ 100</span>
         </div>
-        <div className="mt-3">
-          <ScoreBar score={result.overallScore} />
-        </div>
+        <Progress
+          className="mt-3"
+          value={result.overallScore}
+          indicatorClassName={scoreColor(result.overallScore)}
+        />
 
-        <p className="mt-4 font-medium">{result.verdict}</p>
-        <p className="mt-2 text-sm text-muted-foreground">{result.summary}</p>
-      </div>
+        <p className="mt-5 font-medium leading-relaxed">{result.verdict}</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
+      </Card>
 
-      <div className="rounded-lg border border-border p-6">
+      <Card className="p-6">
         <h3 className="font-semibold">Dimension breakdown</h3>
-        <div className="mt-4 space-y-4">
+        <div className="mt-5 space-y-5">
           {result.dimensions.map((dimension) => (
             <div key={dimension.name}>
               <div className="flex items-center justify-between text-sm">
@@ -111,27 +91,31 @@ export function AssessmentReport({ result }: { result: Assessment }) {
                   {dimension.score}/100
                 </span>
               </div>
-              <div className="mt-1.5">
-                <ScoreBar score={dimension.score} />
-              </div>
-              <p className="mt-1.5 text-sm text-muted-foreground">{dimension.reasoning}</p>
+              <Progress
+                className="mt-2"
+                value={dimension.score}
+                indicatorClassName={scoreColor(dimension.score)}
+              />
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {dimension.reasoning}
+              </p>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
         <ListSection
           title="Strengths"
           items={result.strengths}
           icon={<CheckCircle2 className="h-4 w-4" />}
-          tone="text-emerald-600"
+          tone="text-emerald-400"
         />
         <ListSection
           title="Red flags"
           items={result.redFlags}
           icon={<AlertTriangle className="h-4 w-4" />}
-          tone="text-red-600"
+          tone="text-red-400"
         />
       </div>
 
@@ -139,7 +123,7 @@ export function AssessmentReport({ result }: { result: Assessment }) {
         title="Diligence questions"
         items={result.diligenceQuestions}
         icon={<HelpCircle className="h-4 w-4" />}
-        tone="text-sky-600"
+        tone="text-sky-400"
       />
     </section>
   );

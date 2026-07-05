@@ -1,7 +1,30 @@
 import { useState, type FormEvent } from "react";
+import { Globe, LineChart, ScanText } from "lucide-react";
 import { analyzeUrl } from "@/lib/api";
 import { AssessmentReport } from "@/components/AssessmentReport";
+import { Hero } from "@/components/Hero";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import type { Assessment } from "@/types/assessment";
+
+const STEPS = [
+  {
+    icon: Globe,
+    title: "Fetch",
+    body: "The page is loaded server-side, rendering JavaScript when the raw HTML is thin.",
+  },
+  {
+    icon: ScanText,
+    title: "Extract",
+    body: "Content is cleaned down to the text and visuals that actually signal potential.",
+  },
+  {
+    icon: LineChart,
+    title: "Assess",
+    body: "Claude scores market potential across eight dimensions with cited reasoning.",
+  },
+];
 
 function App() {
   const [url, setUrl] = useState("");
@@ -25,34 +48,50 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-3xl font-bold tracking-tight">web-reviewer-bot</h1>
-        <p className="mt-2 text-muted-foreground">
-          Paste a product URL to get a market-potential assessment.
-        </p>
+      <nav className="mx-auto flex max-w-5xl items-center gap-2.5 px-6 py-5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+          <LineChart className="h-4 w-4" />
+        </div>
+        <span className="font-semibold tracking-tight">Web Analysis Tracker</span>
+      </nav>
 
-        <form onSubmit={handleAnalyze} className="mt-8 flex gap-2">
-          <input
+      <Hero>
+        <form onSubmit={handleAnalyze} className="flex gap-2">
+          <Input
             type="url"
             required
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             placeholder="https://example.com"
-            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex-1"
           />
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-          >
+          <Button type="submit" disabled={loading}>
             {loading ? "Analyzing…" : "Analyze"}
-          </button>
+          </Button>
         </form>
+        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+      </Hero>
 
-        {error && <p className="mt-6 text-sm text-destructive">{error}</p>}
-
-        {result && <AssessmentReport result={result} />}
-      </div>
+      <main className="mx-auto max-w-4xl px-6 pb-24">
+        {result ? (
+          <AssessmentReport result={result} />
+        ) : (
+          <div className="mt-16 grid gap-6 sm:grid-cols-3">
+            {STEPS.map((step) => {
+              const Icon = step.icon;
+              return (
+                <Card key={step.title} className="p-6">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-4 font-semibold">{step.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{step.body}</p>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
