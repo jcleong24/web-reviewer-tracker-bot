@@ -121,8 +121,10 @@ public class AnalysisServiceImpl implements AnalysisService {
      * If the raw fetch produced too little text, re-fetch with the headless
      * browser (when enabled) and attach a screenshot. On any rendering failure
      * we keep the original thin content rather than failing the request.
+     *
+     * <p>Package-private so the fallback branching can be unit-tested directly.
      */
-    private ExtractedContent renderIfThin(String url, ExtractedContent content) {
+    ExtractedContent renderIfThin(String url, ExtractedContent content) {
         if (content.text().length() >= thinThreshold || pageRenderService.isEmpty()) {
             return content;
         }

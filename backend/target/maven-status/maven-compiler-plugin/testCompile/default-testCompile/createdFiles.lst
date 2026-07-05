@@ -1,2 +1,3 @@
+com\modefair\webreviewer\service\impl\AnalysisServiceImplTest.class
 com\modefair\webreviewer\service\render\PlaywrightPageRenderServiceTest.class
 com\modefair\webreviewer\WebReviewerApplicationTests.class

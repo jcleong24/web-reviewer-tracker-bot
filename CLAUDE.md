@@ -10,7 +10,7 @@ This is a multi-module repository split into two main systems:
 1. **Frontend:** React + TypeScript (Vite SPA) + Tailwind CSS + ShadCN UI
 2. **Backend:** Java Spring Boot REST API + PostgreSQL Database
 
-> **Status: greenfield.** Only basic system directories exist. Maintain strict separation between the `frontend/` directory and the `backend/` directory.
+> **Status:** The backend analyze pipeline is implemented — fetch (`RestClient`) → extract (`jsoup`) → analyze (Anthropic Java SDK with structured output), plus endpoint rate limiting, a global exception handler, and an optional Playwright rendering fallback for JS-heavy pages (off by default). The frontend is scaffolded (Vite SPA, API client, shared types); UI components are not built yet. Maintain strict separation between the `frontend/` and `backend/` directories.
 
 ## Commands
 
