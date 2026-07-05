@@ -50,18 +50,13 @@
             <version>8.14.0</version>
         </dependency>
 
-        
-          <!-- TODO: Add the official Anthropic Java SDK for the Analyze step.
-          Pin the current version from https://github.com/anthropics/anthropic-sdk-java : -->
-
-          <dependency>
-              <groupId>com.anthropic</groupId>
-              <artifactId>anthropic-java</artifactId>
-              <version>2.44.1</version>
-          </dependency>
-
-          <!-- Until this is added, AnalysisServiceImpl returns a clearly-marked stub
-          assessment (see that class). Do not guess the version — check the repo. -->
+        <!-- Official Anthropic Java SDK for the Analyze step.
+             Pin the current version from https://github.com/anthropics/anthropic-sdk-java -->
+        <dependency>
+            <groupId>com.anthropic</groupId>
+            <artifactId>anthropic-java</artifactId>
+            <version>2.44.1</version>
+        </dependency>
 
         <!-- Headless-browser rendering for the thin-page fallback. Pin the current
              version from https://github.com/microsoft/playwright-java/releases -->
