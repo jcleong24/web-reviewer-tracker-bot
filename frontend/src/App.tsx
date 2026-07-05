@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Globe, LineChart, ScanText } from "lucide-react";
 import { analyzeUrl } from "@/lib/api";
+import { AnalyzingCard } from "@/components/AnalyzingCard";
 import { AssessmentReport } from "@/components/AssessmentReport";
 import { Hero } from "@/components/Hero";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,7 @@ function App() {
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             placeholder="https://example.com"
+            disabled={loading}
             className="flex-1"
           />
           <Button type="submit" disabled={loading}>
@@ -73,7 +75,9 @@ function App() {
       </Hero>
 
       <main className="mx-auto max-w-4xl px-6 pb-24">
-        {result ? (
+        {loading ? (
+          <AnalyzingCard url={url} />
+        ) : result ? (
           <AssessmentReport result={result} />
         ) : (
           <div className="mt-16 grid gap-6 sm:grid-cols-3">
