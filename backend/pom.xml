@@ -62,7 +62,15 @@
 
           <!-- Until this is added, AnalysisServiceImpl returns a clearly-marked stub
           assessment (see that class). Do not guess the version — check the repo. -->
-       
+
+        <!-- Headless-browser rendering for the thin-page fallback. Pin the current
+             version from https://github.com/microsoft/playwright-java/releases -->
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.49.0</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

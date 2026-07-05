@@ -7,12 +7,17 @@ C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\mai
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\dto\DimensionScore.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\dto\ExtractedContent.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\dto\ModelAssessment.java
+C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\dto\RenderedPage.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\exception\GlobalExceptionHandler.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\exception\PageFetchException.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\AnalysisService.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\ContentExtractor.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\impl\AnalysisServiceImpl.java
+C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\impl\DefaultUrlSafetyValidator.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\impl\JsoupContentExtractor.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\impl\RestClientPageFetchService.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\PageFetchService.java
+C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\render\PageRenderService.java
+C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\render\PlaywrightPageRenderService.java
+C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\service\UrlSafetyValidator.java
 C:\Users\Jin Chuen\Desktop\personal Git project\web-reviewer-bot\backend\src\main\java\com\modefair\webreviewer\WebReviewerApplication.java
