@@ -27,11 +27,12 @@ const STAGES = [
  */
 export function AnalyzingCard({ url }: { url: string }) {
   const [stage, setStage] = useState(0);
-  const [progress, setProgress] = useState(8);
+  const [progress, setProgress] = useState(6);
 
   useEffect(() => {
-    const toExtract = setTimeout(() => setStage(1), 4500);
-    const toAssess = setTimeout(() => setStage(2), 5000);
+    // Fetch/extract are quick; hold on the (long) assessment stage.
+    const toExtract = setTimeout(() => setStage(1), 8000);
+    const toAssess = setTimeout(() => setStage(2), 18000);
     return () => {
       clearTimeout(toExtract);
       clearTimeout(toAssess);
@@ -39,10 +40,11 @@ export function AnalyzingCard({ url }: { url: string }) {
   }, []);
 
   useEffect(() => {
-    // Ease toward ~92% so the bar keeps moving but never completes early.
+    // Eased creep tuned for a ~50s analysis: fast start, gentle approach to
+    // ~95% around the 50s mark, never completing until the real result lands.
     const id = setInterval(() => {
-      setProgress((p) => (p >= 92 ? 92 : p + Math.max(0.5, (92 - p) * 0.06)));
-    }, 300);
+      setProgress((p) => (p >= 97 ? 97 : p + (98 - p) * 0.034));
+    }, 500);
     return () => clearInterval(id);
   }, []);
 
