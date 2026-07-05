@@ -1,21 +1,31 @@
 package com.modefair.webreviewer.service.impl;
 
 import com.anthropic.client.AnthropicClient;
+import com.anthropic.models.messages.Base64ImageSource;
+import com.anthropic.models.messages.ContentBlockParam;
+import com.anthropic.models.messages.ImageBlockParam;
 import com.anthropic.models.messages.MessageCreateParams;
 import com.anthropic.models.messages.StructuredMessageCreateParams;
+import com.anthropic.models.messages.TextBlockParam;
 import com.anthropic.models.messages.ThinkingConfigAdaptive;
 import com.modefair.webreviewer.dto.AssessmentResponse;
 import com.modefair.webreviewer.dto.ExtractedContent;
 import com.modefair.webreviewer.dto.ModelAssessment;
+import com.modefair.webreviewer.dto.RenderedPage;
 import com.modefair.webreviewer.service.AnalysisService;
 import com.modefair.webreviewer.service.ContentExtractor;
 import com.modefair.webreviewer.service.PageFetchService;
+import com.modefair.webreviewer.service.UrlSafetyValidator;
+import com.modefair.webreviewer.service.render.PageRenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Default {@link AnalysisService} implementation: validates the URL, fetches and
@@ -57,17 +67,26 @@ public class AnalysisServiceImpl implements AnalysisService {
 
     private final PageFetchService pageFetchService;
     private final ContentExtractor contentExtractor;
+    private final UrlSafetyValidator urlSafetyValidator;
+    private final Optional<PageRenderService> pageRenderService;
     private final AnthropicClient anthropicClient;
     private final String anthropicModel;
+    private final int thinThreshold;
 
     public AnalysisServiceImpl(PageFetchService pageFetchService,
                                ContentExtractor contentExtractor,
+                               UrlSafetyValidator urlSafetyValidator,
+                               Optional<PageRenderService> pageRenderService,
                                AnthropicClient anthropicClient,
-                               @Value("${anthropic.model}") String anthropicModel) {
+                               @Value("${anthropic.model}") String anthropicModel,
+                               @Value("${webreviewer.fetch.thin-threshold}") int thinThreshold) {
         this.pageFetchService = pageFetchService;
         this.contentExtractor = contentExtractor;
+        this.urlSafetyValidator = urlSafetyValidator;
+        this.pageRenderService = pageRenderService;
         this.anthropicClient = anthropicClient;
         this.anthropicModel = anthropicModel;
+        this.thinThreshold = thinThreshold;
     }
 
     @Override
@@ -75,9 +94,11 @@ public class AnalysisServiceImpl implements AnalysisService {
         if (!isValidHttpUrl(url)) {
             throw new IllegalArgumentException("A valid http/https URL is required.");
         }
+        urlSafetyValidator.verifyPublic(url);
 
         String html = pageFetchService.fetchHtml(url);
         ExtractedContent content = contentExtractor.extract(url, html);
+        content = renderIfThin(url, content);
 
         log.info("Analyzing '{}' with model {}", content.title(), anthropicModel);
         ModelAssessment assessment = requestAssessment(content);
@@ -96,15 +117,43 @@ public class AnalysisServiceImpl implements AnalysisService {
         );
     }
 
+    /**
+     * If the raw fetch produced too little text, re-fetch with the headless
+     * browser (when enabled) and attach a screenshot. On any rendering failure
+     * we keep the original thin content rather than failing the request.
+     */
+    private ExtractedContent renderIfThin(String url, ExtractedContent content) {
+        if (content.text().length() >= thinThreshold || pageRenderService.isEmpty()) {
+            return content;
+        }
+        log.info("Extracted text is thin ({} chars); falling back to Playwright for {}",
+                content.text().length(), url);
+        try {
+            RenderedPage rendered = pageRenderService.get().render(url);
+            ExtractedContent reExtracted = contentExtractor.extract(url, rendered.html());
+            return reExtracted.withScreenshot(rendered.screenshot());
+        } catch (RuntimeException e) {
+            log.warn("Playwright fallback failed for {}; using thin text. Cause: {}",
+                    url, e.getMessage());
+            return content;
+        }
+    }
+
     private ModelAssessment requestAssessment(ExtractedContent content) {
-        StructuredMessageCreateParams<ModelAssessment> params = MessageCreateParams.builder()
+        MessageCreateParams.Builder builder = MessageCreateParams.builder()
                 .model(anthropicModel)
                 .maxTokens(MAX_TOKENS)
                 .thinking(ThinkingConfigAdaptive.builder().build())
-                .system(SYSTEM_PROMPT)
-                .addUserMessage(buildUserPrompt(content))
-                .outputConfig(ModelAssessment.class)
-                .build();
+                .system(SYSTEM_PROMPT);
+
+        if (content.screenshot() != null && content.screenshot().length > 0) {
+            builder.addUserMessageOfBlockParams(buildMultimodalPrompt(content));
+        } else {
+            builder.addUserMessage(buildUserPrompt(content));
+        }
+
+        StructuredMessageCreateParams<ModelAssessment> params =
+                builder.outputConfig(ModelAssessment.class).build();
 
         return anthropicClient.messages().create(params).content().stream()
                 .flatMap(block -> block.text().stream())
@@ -112,6 +161,21 @@ public class AnalysisServiceImpl implements AnalysisService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(
                         "Claude returned no structured assessment for " + content.url()));
+    }
+
+    private static List<ContentBlockParam> buildMultimodalPrompt(ExtractedContent content) {
+        String base64 = Base64.getEncoder().encodeToString(content.screenshot());
+        ImageBlockParam screenshot = ImageBlockParam.builder()
+                .source(Base64ImageSource.builder()
+                        .mediaType(Base64ImageSource.MediaType.IMAGE_PNG)
+                        .data(base64)
+                        .build())
+                .build();
+        return List.of(
+                ContentBlockParam.ofText(TextBlockParam.builder()
+                        .text(buildUserPrompt(content))
+                        .build()),
+                ContentBlockParam.ofImage(screenshot));
     }
 
     private static String buildUserPrompt(ExtractedContent content) {
